@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App de Audios - Inglés</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
+        .screen {
+            display: none;
+        }
+        .screen.active {
+            display: block;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 6px 0;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 15px;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+        .text-box {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            padding: 15px;
+            margin-top: 15px;
+            border-radius: 5px;
+            text-align: left;
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+            white-space: pre-line;
+            font-size: 14px;
+        }
+        .phrase-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            text-align: left;
+        }
+        .phrase-card p {
+            margin: 5px 0;
+        }
+        .phrase-en {
+            font-weight: bold;
+            color: #333;
+        }
+        .phrase-es {
+            color: #666;
+            font-size: 14px;
+        }
+        .btn-play-phrase {
+            background-color: #28a745;
+            padding: 5px 10px;
+            font-size: 13px;
+            width: auto;
+            margin-top: 5px;
+        }
+        .btn-play-phrase:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <!-- Elemento de Audio oculto (sin barra visible) -->
+    <audio id="audio-player"></audio>
+
+    <!-- PANTALLA 1: Lista de Episodios Disponibles -->
+    <div id="screen-1" class="screen active">
+        <h2>Selecciona un Episodio</h2>
+        <!-- Botón con solo el número 64 -->
+        <button onclick="openEpisode(64)">64</button>
+    </div>
+
+    <!-- PANTALLA 2: Reproductor y Textos -->
+    <div id="screen-2" class="screen">
+        <h2 id="episode-title">Episodio 64</h2>
+
+        <button onclick="playAudio()">Reproducir</button>
+        <button onclick="pauseAudio()">Parar</button>
+        <button onclick="resumeAudio()">Reanudar</button>
+        
+        <button onclick="showEnglish()">Texto Inglés</button>
+        <button onclick="hideEnglish()" class="btn-secondary">Ocultar Inglés</button>
+        <div id="text-english" class="text-box"></div>
+
+        <button onclick="showSpanish()">Texto Español</button>
+        <button onclick="hideSpanish()" class="btn-secondary">Ocultar Español</button>
+        <div id="text-spanish" class="text-box"></div>
+
+        <button onclick="goToStudy()" style="background-color: #28a745;">Estudiar Frases</button>
+        <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
+    </div>
+
+    <!-- PANTALLA 3: Estudiar Frases -->
+    <div id="screen-3" class="screen">
+        <h2>Estudiar Frases</h2>
+        <div id="phrases-container" style="max-height: 350px; overflow-y: auto; text-align: left; margin-bottom: 15px;">
+            <!-- Tarjetas de frases inyectadas por JS -->
+        </div>
+        <button onclick="goToScreen2()" class="btn-secondary">Volver</button>
+    </div>
+
+</div>
+
+<script>
+    // Base de datos con las 18 frases del episodio 64
+    const availableEpisodes = [
+        {
+            id: 64,
+            title: "Episodio 64",
+            phrases: [
+                { start: 0.0, end: 3.5, en: "Excuse me. Quick question: what's the best way to get out of the airport?", es: "Disculpe. Una pregunta rápida: ¿cuál es la mejor manera de salir del aeropuerto?" },
+                { start: 3.5, end: 7.0, en: "Hi! Sure, we have two main transportation options for you.", es: "¡Hola! Claro, tenemos dos opciones principales de transporte para usted." },
+                { start: 7.0, end: 9.5, en: "Great! What’s the first option?", es: "¡Genial! ¿Cuál es la primera opción?" },
+                { start: 9.5, end: 14.0, en: "The first option is taking a rideshare like Uber from the airport.", es: "La primera opción es tomar un servicio de transporte compartido como Uber desde el aeropuerto." },
+                { start: 14.0, end: 17.0, en: "Where is the pick-up area for rideshares?", es: "¿Dónde está la zona de recogida para los vehículos compartidos?" },
+                { start: 17.0, end: 22.0, en: "Just head outside toward Pillar 3 in the designated rideshare zone.", es: "Solo diríjase hacia afuera, hacia el Pilar 3, en la zona designada para vehículos compartidos." },
+                { start: 22.0, end: 25.0, en: "That sounds easy. And what’s the second option?", es: "Suena fácil. ¿Y cuál es la segunda opción?" },
+                { start: 25.0, end: 30.0, en: "You can take the free airport shuttle to the nearby bus station.", es: "Puede tomar el autobús lanzadera gratuito del aeropuerto hacia la estación de autobuses cercana." },
+                { start: 30.0, end: 33.0, en: "Oh, a shuttle! Where does it drop passengers off?", es: "¡Oh, un servicio de autobús lanzadera! ¿Dónde deja a los pasajeros?" },
+                { start: 33.0, end: 38.0, en: "It drops you off at the main bus terminal, right outside the airport.", es: "Los deja en la terminal principal de autobuses, justo afuera del aeropuerto." },
+                { start: 38.0, end: 41.0, en: "So the shuttle is completely free of charge?", es: "¿Así que el autobús lanzadera es completamente gratuito?" },
+                { start: 41.0, end: 47.0, en: "Yes, the airport shuttle is free, but you will need a ticket for the city bus.", es: "Sí, el autobús lanzadera del aeropuerto es gratuito, pero necesitará un boleto para el autobús urbano." },
+                { start: 47.0, end: 50.0, en: "Which option is faster to get downtown?", es: "¿Cuál opción es más rápida para llegar al centro?" },
+                { start: 50.0, end: 55.0, en: "Rideshares are faster, but the city bus is much more budget-friendly.", es: "Los vehículos compartidos son más rápidos, pero el autobús urbano es mucho más económico." },
+                { start: 55.0, end: 58.0, en: "Where do I board the free shuttle?", es: "¿Dónde abordo el autobús lanzadera gratuito?" },
+                { start: 58.0, end: 63.0, en: "Right outside Exit 2. You’ll see yellow signs that say Airport Shuttle.", es: "Justo afuera de la Salida 2. Verá letreros amarillos que dicen \"Airport Shuttle\"." },
+                { start: 63.0, end: 68.0, en: "Perfect. I’ll take the shuttle to the bus station. Thank you!", es: "¡Perfecto! Tomaré el autobús lanzadera hacia la estación de autobuses. ¡Gracias!" },
+                { start: 68.0, end: 72.0, en: "You're very welcome! Have a safe trip!", es: "¡De nada! ¡Que tenga un viaje seguro!" }
+            ]
+        }
+    ];
+
+    let stopTimeTimeout = null;
+
+    function openEpisode(id) {
+        const ep = availableEpisodes.find(item => item.id === id);
+        if(ep) {
+            document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
+            
+            let enText = "";
+            let esText = "";
+            ep.phrases.forEach(p => {
+                enText += p.en + "\n";
+                esText += p.es + "\n";
+            });
+            document.getElementById('text-english').innerText = enText.trim();
+            document.getElementById('text-spanish').innerText = esText.trim();
+
+            const phrasesContainer = document.getElementById('phrases-container');
+            phrasesContainer.innerHTML = "";
+            ep.phrases.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = 'phrase-card';
+                card.innerHTML = `
+                    <p class="phrase-en">${index + 1}. ${p.en}</p>
+                    <p class="phrase-es">${p.es}</p>
+                    <button class="btn-play-phrase" onclick="playSpecificPhrase(${p.start}, ${p.end})">Escuchar frase</button>
+                `;
+                phrasesContainer.appendChild(card);
+            });
+            
+            // Ruta del audio apuntando a la carpeta "audios"
+            document.getElementById('audio-player').src = `audios/${ep.id}.mp3`;
+        }
+        switchScreen('screen-2');
+    }
+
+    function playSpecificPhrase(startTime, endTime) {
+        const audio = document.getElementById('audio-player');
+        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+
+        audio.currentTime = startTime;
+        audio.play();
+
+        const durationMs = (endTime - startTime) * 1000;
+        stopTimeTimeout = setTimeout(() => {
+            audio.pause();
+        }, durationMs);
+    }
+
+    function goToScreen1() {
+        pauseAudio();
+        switchScreen('screen-1');
+    }
+
+    function goToScreen2() {
+        pauseAudio();
+        switchScreen('screen-2');
+    }
+
+    function goToStudy() {
+        pauseAudio();
+        switchScreen('screen-3');
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function getAudio() {
+        return document.getElementById('audio-player');
+    }
+
+    function playAudio() {
+        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+        getAudio().play();
+    }
+
+    function pauseAudio() {
+        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+        getAudio().pause();
+    }
+
+    function resumeAudio() {
+        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+        getAudio().play();
+    }
+
+    function showEnglish() { document.getElementById('text-english').style.display = 'block'; }
+    function hideEnglish() { document.getElementById('text-english').style.display = 'none'; }
+    function showSpanish() { document.getElementById('text-spanish').style.display = 'block'; }
+    function hideSpanish() { document.getElementById('text-spanish').style.display = 'none'; }
+</script>
+
+</body>
+</html>
