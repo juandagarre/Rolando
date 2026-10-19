@@ -50,6 +50,18 @@
         .btn-secondary:hover {
             background-color: #5a6268;
         }
+        
+        /* Contenedor para alinear botones en una sola línea */
+        .button-row {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0;
+        }
+        .button-row button {
+            margin: 0;
+            flex: 1;
+        }
+
         .text-box {
             background: #f8f9fa;
             border: 1px solid #ddd;
@@ -112,19 +124,28 @@
     <div id="screen-2" class="screen">
         <h2 id="episode-title">Episodio 64</h2>
 
-        <button onclick="playAudio()">Reproducir</button>
-        <button onclick="pauseAudio()">Parar</button>
-        <button onclick="resumeAudio()">Reanudar</button>
+        <!-- Botones de Reproducción en una sola línea -->
+        <div class="button-row">
+            <button onclick="playAudio()">Reproducir</button>
+            <button onclick="pauseAudio()">Parar</button>
+            <button onclick="resumeAudio()">Reanudar</button>
+        </div>
         
-        <button onclick="showEnglish()">Texto Inglés</button>
-        <button onclick="hideEnglish()" class="btn-secondary">Ocultar Inglés</button>
+        <!-- Botones de Texto Inglés en una sola línea -->
+        <div class="button-row">
+            <button onclick="showEnglish()">Texto EN</button>
+            <button onclick="hideEnglish()" class="btn-secondary">Ocultar EN</button>
+        </div>
         <div id="text-english" class="text-box"></div>
 
-        <button onclick="showSpanish()">Texto Español</button>
-        <button onclick="hideSpanish()" class="btn-secondary">Ocultar Español</button>
+        <!-- Botones de Texto Español en una sola línea -->
+        <div class="button-row">
+            <button onclick="showSpanish()">Texto ES</button>
+            <button onclick="hideSpanish()" class="btn-secondary">Ocultar ES</button>
+        </div>
         <div id="text-spanish" class="text-box"></div>
 
-        <button onclick="goToStudy()" style="background-color: #28a745;">Estudiar Frases</button>
+        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
