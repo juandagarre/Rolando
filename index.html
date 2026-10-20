@@ -166,7 +166,7 @@
         </div>
         <div id="text-spanish" class="text-box"></div>
 
-        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.m4a)</button>
+        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.mp3)</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
@@ -227,7 +227,7 @@
             { en: "Oh, gotcha. What happened? Is everything okay?", es: "Ah, entiendo. ¿Qué ha pasado? ¿Está todo bien?" },
             { en: "Yeah, everything's fine, but there was a major accident on the freeway.", es: "Sí, todo bien, pero ha habido un accidente grave en la autopista." },
             { en: "Oh, I see. Traffic must be completely backed up then.", es: "Ah, ya veo. El tráfico debe estar completamente colapsado entonces." },
-            { en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutes." },
+            { en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutos." },
             { en: "That's frustrating. What's your estimated time of arrival at the job site?", es: "Qué fastidio. ¿Cuál es tu hora estimada de llegada al lugar de trabajo?" },
             { en: "I should be at the warehouse by 7:35.", es: "Debería estar en el almacén a las 7:35." },
             { en: "Okay. Did you let someone on your crew know?", es: "De acuerdo. ¿Le has avisado a alguien de tu cuadrilla?" },
@@ -330,18 +330,19 @@
         return num < 10 ? "0" + num : "" + num;
     }
 
+    // Ahora busca la frase en MP3 dentro de su carpeta correspondiente (ej: 66/66_01.mp3)
     function playSpecificPhrase(index) {
         const fileNumber = formatIndex(index);
         crearReproductorNuevo();
         const audio = document.getElementById('audio-player');
         
-        const rutaM4a = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
+        const rutaMp3Frase = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.mp3`;
         const info = document.getElementById('debug-info');
-        info.innerText = `Reproduciendo: ${rutaM4a}`;
+        info.innerText = `Reproduciendo frase: ${rutaMp3Frase}`;
         info.style.background = '#d4edda';
         info.style.color = '#155724';
         
-        audio.src = rutaM4a;
+        audio.src = rutaMp3Frase;
         audio.play().catch(e => {
             info.innerText = `❌ Error: ${e.message}`;
             info.style.background = '#f8d7da';
@@ -355,7 +356,7 @@
         
         const rutaMp3 = `audios/${currentEpisodeId}.mp3`;
         const info = document.getElementById('debug-info');
-        info.innerText = `Reproduciendo MP3: ${rutaMp3}`;
+        info.innerText = `Reproduciendo MP3 completo: ${rutaMp3}`;
         info.style.background = '#d4edda';
         info.style.color = '#155724';
         
