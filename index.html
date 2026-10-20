@@ -141,7 +141,7 @@
         <h2 id="episode-title">Episodio</h2>
 
         <div class="button-row">
-            <button onclick="playAudio()">Reproducir</button>
+            <button onclick="playFullEpisode()">Reproducir</button>
             <button onclick="pauseAudio()">Parar</button>
             <button onclick="resumeAudio()">Reanudar</button>
         </div>
@@ -173,94 +173,81 @@
 
 <script>
     // =========================================================================
-    // AQUÍ PUEDES AÑADIR O EDITAR TUS EPISODIOS FÁCILMENTE
+    // ESTRUCTURA DE EPISODIOS CON AUDIOS TROCEADOS INDIVIDUALES (.m4a)
     // =========================================================================
     const misEpisodiosRellenos = {
-        // Ejemplo para el episodio 15 (cuando lo tengas, solo descoméntalo o añádelo así):
-        /*
-        "15": [
-            { start: 0.0, end: 3.5, en: "English phrase 1...", es: "Frase en español 1..." },
-            { start: 3.6, end: 7.0, en: "English phrase 2...", es: "Frase en español 2..." }
-        ],
-        */
-
-        // Tu episodio 64 actual
         "64": [
-            { start: 2.5, end: 7.1, en: "Excuse me. Quick question: what's the best way to get out of the airport?", es: "Disculpe. Una pregunta rápida: ¿cuál es la mejor manera de salir del aeropuerto?" },
-            { start: 7.2, end: 10.6, en: "Hi! Sure, we have two main transportation options for you.", es: "¡Hola! Claro, tenemos dos opciones principales de transporte para usted." },
-            { start: 10.6, end: 13.0, en: "Great! What’s the first option?", es: "¡Genial! ¿Cuál es la primera opción?" },
-            { start: 13.0, end: 16.8, en: "The first option is taking a rideshare like Uber from the airport.", es: "La primera opción es tomar un servicio de transporte compartido como Uber desde el aeropuerto." },
-            { start: 16.8, end: 19.0, en: "Where is the pick-up area for rideshares?", es: "¿Dónde está la zona de recogida para los vehículos compartidos?" },
-            { start: 19.0, end: 23.3, en: "Just head outside toward Pillar 3 in the designated rideshare zone.", es: "Solo diríjase hacia afuera, hacia el Pilar 3, en la zona designada para vehículos compartidos." },
-            { start: 23.3, end: 26.3, en: "That sounds easy. And what’s the second option?", es: "Suena fácil. ¿Y cuál es la segunda opción?" },
-            { start: 26.3, end: 29.8, en: "You can take the free airport shuttle to the nearby bus station.", es: "Puede tomar el autobús lanzadera gratuito del aeropuerto hacia la estación de autobuses cercana." },
-            { start: 29.8, end: 32.9, en: "Oh, a shuttle! Where does it drop passengers off?", es: "¡Oh, un servicio de autobús lanzadera! ¿Dónde deja a los pasajeros?" },
-            { start: 32.9, end: 36.5, en: "It drops you off at the main bus terminal, right outside the airport.", es: "Los deja en la terminal principal de autobuses, justo afuera del aeropuerto." },
-            { start: 36.5, end: 39.1, en: "So the shuttle is completely free of charge?", es: "¿Así que el autobús lanzadera es completamente gratuito?" },
-            { start: 39.1, end: 43.6, en: "Yes, the airport shuttle is free, but you will need a ticket for the city bus.", es: "Sí, el autobús lanzadera del aeropuerto es gratuito, pero necesitará un boleto para el autobús urbano." },
-            { start: 43.6, end: 46.5, en: "Which option is faster to get downtown?", es: "¿Cuál opción es más rápida para llegar al centro?" },
-            { start: 46.5, end: 50.8, en: "Rideshares are faster, but the city bus is much more budget-friendly.", es: "Los vehículos compartidos son más rápidos, pero el autobús urbano es mucho más económico." },
-            { start: 50.8, end: 52.8, en: "Where do I board the free shuttle?", es: "¿Dónde abordo el autobús lanzadera gratuito?" },
-            { start: 52.8, end: 57.0, en: "Right outside Exit 2. You’ll see yellow signs that say Airport Shuttle.", es: "Justo afuera de la Salida 2. Verá letreros amarillos que dicen \"Airport Shuttle\"." },
-            { start: 57.0, end: 60.7, en: "Perfect. I’ll take the shuttle to the bus station. Thank you!", es: "¡Perfecto! Tomaré el autobús lanzadera hacia la estación de autobuses. ¡Gracias!" },
-            { start: 60.7, end: 64.5, en: "You're very welcome! Have a safe trip!", es: "¡De nada! ¡Que tenga un viaje seguro!" }
+            { en: "Excuse me. Quick question: what's the best way to get out of the airport?", es: "Disculpe. Una pregunta rápida: ¿cuál es la mejor manera de salir del aeropuerto?" },
+            { en: "Hi! Sure, we have two main transportation options for you.", es: "¡Hola! Claro, tenemos dos opciones principales de transporte para usted." },
+            { en: "Great! What’s the first option?", es: "¡Genial! ¿Cuál es la primera opción?" },
+            { en: "The first option is taking a rideshare like Uber from the airport.", es: "La primera opción es tomar un servicio de transporte compartido como Uber desde el aeropuerto." },
+            { en: "Where is the pick-up area for rideshares?", es: "¿Dónde está la zona de recogida para los vehículos compartidos?" },
+            { en: "Just head outside toward Pillar 3 in the designated rideshare zone.", es: "Solo diríjase hacia afuera, hacia el Pilar 3, en la zona designada para vehículos compartidos." },
+            { en: "That sounds easy. And what’s the second option?", es: "Suena fácil. ¿Y cuál es la segunda opción?" },
+            { en: "You can take the free airport shuttle to the nearby bus station.", es: "Puede tomar el autobús lanzadera gratuito del aeropuerto hacia la estación de autobuses cercana." },
+            { en: "Oh, a shuttle! Where does it drop passengers off?", es: "¡Oh, un servicio de autobús lanzadera! ¿Dónde deja a los pasajeros?" },
+            { en: "It drops you off at the main bus terminal, right outside the airport.", es: "Los deja en la terminal principal de autobuses, justo afuera del aeropuerto." },
+            { en: "So the shuttle is completely free of charge?", es: "¿Así que el autobús lanzadera es completamente gratuito?" },
+            { en: "Yes, the airport shuttle is free, but you will need a ticket for the city bus.", es: "Sí, el autobús lanzadera del aeropuerto es gratuito, pero necesitará un boleto para el autobús urbano." },
+            { en: "Which option is faster to get downtown?", es: "¿Cuál opción es más rápida para llegar al centro?" },
+            { en: "Rideshares are faster, but the city bus is much more budget-friendly.", es: "Los vehículos compartidos son más rápidos, pero el autobús urbano es mucho más económico." },
+            { en: "Where do I board the free shuttle?", es: "¿Dónde abordo el autobús lanzadera gratuito?" },
+            { en: "Right outside Exit 2. You’ll see yellow signs that say Airport Shuttle.", es: "Justo afuera de la Salida 2. Verá letreros amarillos que dicen \"Airport Shuttle\"." },
+            { en: "Perfect. I’ll take the shuttle to the bus station. Thank you!", es: "¡Perfecto! Tomaré el autobús lanzadera hacia la estación de autobuses. ¡Gracias!" },
+            { en: "You're very welcome! Have a safe trip!", es: "¡De nada! ¡Que tenga un viaje seguro!" }
         ],
 
         "65": [
-            { start: 0.0, end: 4.0, en: "Good morning. Welcome to First National Bank. How can I help you today?", es: "Buenos días. Bienvenido al First National Bank. ¿Cómo puedo ayudarle hoy?" },
-            { start: 4.0, end: 8.0, en: "Good morning. I'd like to open a checking account for the first time, please.", es: "Buenos días. Me gustaría abrir una cuenta corriente por primera vez, por favor." },
-            { start: 8.0, end: 12.0, en: "Great! I'd be happy to assist you with that. Do you have your ID with you?", es: "¡Genial! Estaré encantado de ayudarle con eso. ¿Tiene su documento de identidad consigo?" },
-            { start: 12.0, end: 15.5, en: "Yes, I brought my driver's license and my social security card.", es: "Sí, traje mi licencia de conducir y mi tarjeta de seguridad social." },
-            { start: 15.5, end: 21.0, en: "Perfect. We'll also need a proof of address, like a utility bill.", es: "Perfecto. También necesitaremos un comprobante de domicilio, como una factura de servicios públicos." },
-            { start: 21.0, end: 25.3, en: "Here is an electric bill, but it's not under my name. Is this acceptable?", es: "Aquí tengo una factura de luz, pero no está a mi nombre. ¿Es aceptable?" },
-            { start: 25.3, end: 30.2, en: "That works. Is this account for personal use or direct deposit from work?", es: "Eso sirve. ¿Esta cuenta es para uso personal o para depósito directo del trabajo?" },
-            { start: 30.2, end: 34.0, en: "Mostly for direct deposit and paying my monthly bills online.", es: "Principalmente para depósito directo y para pagar mis facturas mensuales en línea." },
-            { start: 34.0, end: 39.3, en: "Excellent. Our standard checking account has no monthly fee with direct deposit.", es: "Excelente. nuestra cuenta corriente estándar no tiene comisión mensual con el depósito directo." },
-            { start: 39.3, end: 43.0, en: "That sounds good. Is there a minimum opening deposit required today?", es: "Suena bien. ¿Hay algún depósito mínimo de apertura requerido hoy?" },
-            { start: 43.0, end: 48.0, en: "Yes, a $25 minimum deposit is required to activate the account.", es: "Sí, se requiere un depósito mínimo de 25 dólares para activar la cuenta." },
-            { start: 48.0, end: 51.0, en: "Perfect. I have $50 in cash right here.", es: "Perfecto. Tengo 50 dólares en efectivo aquí mismo." },
-            { start: 51.0, end: 54.0, en: "Awesome. I'll print out the agreement for you to sign.", es: "Increíble. Imprimiré el acuerdo para que lo firme." },
-            { start: 54.0, end: 57.5, en: "Will I get a debit card today or will it arrive in the mail?", es: "¿Recibiré una tarjeta de débito hoy o llegará por correo?" },
-            { start: 57.5, end: 63.0, en: "I can print a temporary debit card for you today, and the official one arrives next week.", es: "Puedo imprimirle una tarjeta de débito temporal hoy, y la oficial llegará la próxima semana." },
-            { start: 63.0, end: 67.0, en: "That's very convenient. Can you also help me set up online banking?", es: "Eso es muy conveniente. ¿Puede ayudarme también a configurar la banca en línea?" },
-            { start: 67.0, end: 71.3, en: "Absolutely. Once we finish this paperwork, we'll download the app together.", es: "Por supuesto. Una vez que terminemos este papeleo, descargaremos la aplicación juntos." },
-            { start: 71.3, end: 75.0, en: "Thank you so much for all your help. I really appreciate it.", es: "Muchas gracias por toda su ayuda. Lo aprecio mucho." }
+            { en: "Good morning. Welcome to First National Bank. How can I help you today?", es: "Buenos días. Bienvenido al First National Bank. ¿Cómo puedo ayudarle hoy?" },
+            { en: "Good morning. I'd like to open a checking account for the first time, please.", es: "Buenos días. Me gustaría abrir una cuenta corriente por primera vez, por favor." },
+            { en: "Great! I'd be happy to assist you with that. Do you have your ID with you?", es: "¡Genial! Estaré encantado de ayudarle con eso. ¿Tiene su documento de identidad consigo?" },
+            { en: "Yes, I brought my driver's license and my social security card.", es: "Sí, traje mi licencia de conducir y mi tarjeta de seguridad social." },
+            { en: "Perfect. We'll also need a proof of address, like a utility bill.", es: "Perfecto. También necesitaremos un comprobante de domicilio, como una factura de servicios públicos." },
+            { en: "Here is an electric bill, but it's not under my name. Is this acceptable?", es: "Aquí tengo una factura de luz, pero no está a mi nombre. ¿Es aceptable?" },
+            { en: "That works. Is this account for personal use or direct deposit from work?", es: "Eso sirve. ¿Esta cuenta es para uso personal o para depósito directo del trabajo?" },
+            { en: "Mostly for direct deposit and paying my monthly bills online.", es: "Principalmente para depósito directo y para pagar mis facturas mensuales en línea." },
+            { en: "Excellent. Our standard checking account has no monthly fee with direct deposit.", es: "Excelente. nuestra cuenta corriente estándar no tiene comisión mensual con el depósito directo." },
+            { en: "That sounds good. Is there a minimum opening deposit required today?", es: "Suena bien. ¿Hay algún depósito mínimo de apertura requerido hoy?" },
+            { en: "Yes, a $25 minimum deposit is required to activate the account.", es: "Sí, se requiere un depósito mínimo de 25 dólares para activar la cuenta." },
+            { en: "Perfect. I have $50 in cash right here.", es: "Perfecto. Tengo 50 dólares en efectivo aquí mismo." },
+            { en: "Awesome. I'll print out the agreement for you to sign.", es: "Increíble. Imprimiré el acuerdo para que lo firme." },
+            { en: "Will I get a debit card today or will it arrive in the mail?", es: "¿Recibiré una tarjeta de débito hoy o llegará por correo?" },
+            { en: "I can print a temporary debit card for you today, and the official one arrives next week.", es: "Puedo imprimirle una tarjeta de débito temporal hoy, y la oficial llegará la próxima semana." },
+            { en: "That's very convenient. Can you also help me set up online banking?", es: "Eso es muy conveniente. ¿Puede ayudarme también a configurar la banca en línea?" },
+            { en: "Absolutely. Once we finish this paperwork, we'll download the app together.", es: "Por supuesto. Una vez que terminemos este papeleo, descargaremos la aplicación juntos." },
+            { en: "Thank you so much for all your help. I really appreciate it.", es: "Muchas gracias por toda su ayuda. Lo aprecio mucho." }
         ],
 
-            "66": [
-            { start: 0.0, end: 2.3, en: "Hey, Javier. What's up?", es: "Hola, Javier. ¿Qué tal?" },
-            { start: 2.3, end: 5.3, en: "Good morning, Tom. I'm calling to let you know I'm running late.", es: "Buenos días, Tom. Te llamo para avisarte de que voy tarde." },
-            { start: 5.3, end: 8.5, en: "Oh, gotcha. What happened? Is everything okay?", es: "Ah, entiendo. ¿Qué ha pasado? ¿Está todo bien?" },
-            { start: 8.5, end: 12.7, en: "Yeah, everything's fine, but there was a major accident on the freeway.", es: "Sí, todo bien, pero ha habido un accidente grave en la autopista." },
-            { start: 12.7, end: 16.5, en: "Oh, I see. Traffic must be completely backed up then.", es: "Ah, ya veo. El tráfico debe estar completamente colapsado entonces." },
-            { start: 16.5, end: 20.7, en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutos." },
-            { start: 20.7, end: 24.9, en: "That's frustrating. What's your estimated time of arrival at the job site?", es: "Qué fastidio. ¿Cuál es tu hora estimada de llegada al lugar de trabajo?" },
-            { start: 24.9, end: 27.5, en: "I should be at the warehouse by 7:35.", es: "Debería estar en el almacén a las 7:35." },
-            { start: 27.5, end: 30.3, en: "Okay. Did you let someone on your crew know?", es: "De acuerdo. ¿Le has avisado a alguien de tu cuadrilla?" },
-            { start: 30.3, end: 33.2, en: "Yes, I texted Carlos so he can start unloading the truck.", es: "Sí, le mandé un mensaje a Carlos para que pueda empezar a descargar el camión." },
-            { start: 33.2, end: 36.2, en: "Good thinking. I'll make sure he gets started right away.", es: "Bien pensado. Me aseguraré de que empiece enseguida." },
-            { start: 36.2, end: 39.9, en: "Thanks, Tom. I'll clock in as soon as I park and jump right into work.", es: "Gracias, Tom. Ficharé en cuanto aparque y me pondré a trabajar directamente." },
-            { start: 39.9, end: 44.5, en: "Perfect. Just stay safe and focus on the road. Don't rush.", es: "Perfecto. Ten cuidado, céntrate en la carretera y no corras." },
-            { start: 44.5, end: 48.2, en: "I appreciate that. I can stay an extra half hour today to catch up.", es: "Te lo agradezco. Puedo quedarme media hora extra hoy para ponerme al día." },
-            { start: 48.2, end: 51.2, en: "That would be a huge help. Thanks, Javier.", es: "Eso sería de gran ayuda. Gracias, Javier." },
-            { start: 51.2, end: 55.6, en: "No problem. Traffic is slowly starting to move, so I am on my way.", es: "De nada. El tráfico está empezando a moverse despacio, así que ya voy de camino." },
-            { start: 55.6, end: 58.4, en: "Sounds good. Drive safe and see you in a bit.", es: "Me parece bien. Conduce con cuidado y nos vemos en un rato." },
-            { start: 58.4, end: 61.0, en: "Will do. See you soon, Tom.", es: "Así lo haré. Nos vemos pronto, Tom." }
+        "66": [
+            { en: "Hey, Javier. What's up?", es: "Hola, Javier. ¿Qué tal?" },
+            { en: "Good morning, Tom. I'm calling to let you know I'm running late.", es: "Buenos días, Tom. Te llamo para avisarte de que voy tarde." },
+            { en: "Oh, gotcha. What happened? Is everything okay?", es: "Ah, entiendo. ¿Qué ha pasado? ¿Está todo bien?" },
+            { en: "Yeah, everything's fine, but there was a major accident on the freeway.", es: "Sí, todo bien, pero ha habido un accidente grave en la autopista." },
+            { en: "Oh, I see. Traffic must be completely backed up then.", es: "Ah, ya veo. El tráfico debe estar completamente colapsado entonces." },
+            { en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutos." },
+            { en: "That's frustrating. What's your estimated time of arrival at the job site?", es: "Qué fastidio. ¿Cuál es tu hora estimada de llegada al lugar de trabajo?" },
+            { en: "I should be at the warehouse by 7:35.", es: "Debería estar en el almacén a las 7:35." },
+            { en: "Okay. Did you let someone on your crew know?", es: "De acuerdo. ¿Le has avisado a alguien de tu cuadrilla?" },
+            { en: "Yes, I texted Carlos so he can start unloading the truck.", es: "Sí, le mandé un mensaje a Carlos para que pueda empezar a descargar el camión." },
+            { en: "Good thinking. I'll make sure he gets started right away.", es: "Bien pensado. Me aseguraré de que empiece enseguida." },
+            { en: "Thanks, Tom. I'll clock in as soon as I park and jump right into work.", es: "Gracias, Tom. Ficharé en cuanto aparque y me pondré a trabajar directamente." },
+            { en: "Perfect. Just stay safe and focus on the road. Don't rush.", es: "Perfecto. Ten cuidado, céntrate en la carretera y no corras." },
+            { en: "I appreciate that. I can stay an extra half hour today to catch up.", es: "Te lo agradezco. Puedo quedarme media hora extra hoy para ponerme al día." },
+            { en: "That would be a huge help. Thanks, Javier.", es: "Eso sería de gran ayuda. Gracias, Javier." },
+            { en: "No problem. Traffic is slowly starting to move, so I am on my way.", es: "De nada. El tráfico está empezando a moverse despacio, así que ya voy de camino." },
+            { en: "Sounds good. Drive safe and see you in a bit.", es: "Me parece bien. Conduce con cuidado y nos vemos en un rato." },
+            { en: "Will do. See you soon, Tom.", es: "Así lo haré. Nos vemos pronto, Tom." }
         ]
-    
-
-
-        
     };
-    // =========================================================================
 
     const availableEpisodes = [];
+    let currentEpisodeId = null;
+    let currentPhraseIndex = 0;
+    let isPlayingSequence = false;
 
-    // Genera automáticamente los 75 contenedores (del "01" al "75")
+    // Genera automáticamente los 75 contenedores
     for (let i = 1; i <= 75; i++) {
         let idFormatted = i < 10 ? "0" + i : "" + i;
-        
-        // Verifica si existen frases para este episodio en el objeto de arriba
         let frasesDelEpisodio = misEpisodiosRellenos[idFormatted] || [];
 
         availableEpisodes.push({
@@ -270,7 +257,7 @@
         });
     }
 
-    // Dibuja en la Pantalla 1 únicamente los botones que tienen frases
+    // Dibujar botones en Pantalla 1
     window.onload = function() {
         const episodesContainer = document.getElementById('episodes-container');
         episodesContainer.innerHTML = "";
@@ -283,11 +270,26 @@
                 episodesContainer.appendChild(btn);
             }
         });
+
+        // Configurar listener para reproducir las frases en secuencia
+        const audio = getAudio();
+        audio.onended = function() {
+            if (isPlayingSequence) {
+                currentPhraseIndex++;
+                const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
+                if (ep && currentPhraseIndex < ep.phrases.length) {
+                    playPhraseByIndex(currentPhraseIndex);
+                } else {
+                    isPlayingSequence = false;
+                }
+            }
+        };
     };
 
-    let stopTimeTimeout = null;
-
     function openEpisode(id) {
+        currentEpisodeId = id;
+        pauseAudio();
+
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
             document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
@@ -309,27 +311,39 @@
                 card.innerHTML = `
                     <p class="phrase-en">${index + 1}. ${p.en}</p>
                     <p class="phrase-es">${p.es}</p>
-                    <button class="btn-play-phrase" onclick="playSpecificPhrase(${p.start}, ${p.end})">Escuchar frase</button>
+                    <button class="btn-play-phrase" onclick="playSpecificPhrase(${index})">Escuchar frase</button>
                 `;
                 phrasesContainer.appendChild(card);
             });
-            
-            document.getElementById('audio-player').src = `audios/${ep.id}.mp3`;
         }
         switchScreen('screen-2');
     }
 
-    function playSpecificPhrase(startTime, endTime) {
-        const audio = document.getElementById('audio-player');
-        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+    // Auxiliar para formatear el número de archivo con 2 dígitos (ej: 1 -> "01")
+    function formatIndex(index) {
+        let num = index + 1;
+        return num < 10 ? "0" + num : "" + num;
+    }
 
-        audio.currentTime = startTime;
+    // Reproducir una frase concreta por su índice
+    function playSpecificPhrase(index) {
+        isPlayingSequence = false;
+        playPhraseByIndex(index);
+    }
+
+    function playPhraseByIndex(index) {
+        currentPhraseIndex = index;
+        const fileNumber = formatIndex(index);
+        const audio = getAudio();
+        // Carga el archivo individual desde la carpeta audios/ (ej: audios/66_01.m4a)
+        audio.src = `audios/${currentEpisodeId}_${fileNumber}.m4a`;
         audio.play();
+    }
 
-        const durationMs = (endTime - startTime) * 1000;
-        stopTimeTimeout = setTimeout(() => {
-            audio.pause();
-        }, durationMs);
+    // Reproducir todo el episodio frase por frase en secuencia
+    function playFullEpisode() {
+        isPlayingSequence = true;
+        playPhraseByIndex(0);
     }
 
     function goToScreen1() {
@@ -358,18 +372,12 @@
         return document.getElementById('audio-player');
     }
 
-    function playAudio() {
-        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
-        getAudio().play();
-    }
-
     function pauseAudio() {
-        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
+        isPlayingSequence = false;
         getAudio().pause();
     }
 
     function resumeAudio() {
-        if (stopTimeTimeout) clearTimeout(stopTimeTimeout);
         getAudio().play();
     }
 
