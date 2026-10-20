@@ -279,4 +279,97 @@
 
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
-            document.getElementById('episode-title').innerText = `Episodio ${ep.
+            document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
+            
+            let enText = "";
+            let esText = "";
+            ep.phrases.forEach(p => {
+                enText += p.en + "\n";
+                esText += p.es + "\n";
+            });
+            document.getElementById('text-english').innerText = enText.trim();
+            document.getElementById('text-spanish').innerText = esText.trim();
+
+            const phrasesContainer = document.getElementById('phrases-container');
+            phrasesContainer.innerHTML = "";
+            ep.phrases.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = 'phrase-card';
+                card.innerHTML = `
+                    <p class="phrase-en">${index + 1}. ${p.en}</p>
+                    <p class="phrase-es">${p.es}</p>
+                    <button class="btn-play-phrase" onclick="playSpecificPhrase(${index})">Escuchar frase</button>
+                `;
+                phrasesContainer.appendChild(card);
+            });
+        }
+        switchScreen('screen-2');
+    }
+
+    function formatIndex(index) {
+        let num = index + 1;
+        return num < 10 ? "0" + num : "" + num;
+    }
+
+    function playSpecificPhrase(index) {
+        const fileNumber = formatIndex(index);
+        
+        crearReproductorNuevo();
+        const audio = document.getElementById('audio-player');
+        
+        audio.src = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
+        audio.play().catch(e => {
+            console.error("Error al reproducir frase:", e);
+        });
+    }
+
+    function playFullEpisodeMP3() {
+        crearReproductorNuevo();
+        const audio = document.getElementById('audio-player');
+        
+        audio.src = `audios/${currentEpisodeId}.mp3`;
+        audio.play().catch(e => {
+            console.error("Error al reproducir episodio completo:", e);
+        });
+    }
+
+    function goToScreen1() {
+        pauseAudio();
+        switchScreen('screen-1');
+    }
+
+    function goToScreen2() {
+        pauseAudio();
+        switchScreen('screen-2');
+    }
+
+    function goToStudy() {
+        pauseAudio();
+        switchScreen('screen-3');
+    }
+
+    function switchScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    function pauseAudio() {
+        const audio = document.getElementById('audio-player');
+        if (audio) audio.pause();
+    }
+
+    function resumeAudio() {
+        const audio = document.getElementById('audio-player');
+        if (audio) audio.play();
+    }
+
+    function showEnglish() { document.getElementById('text-english').style.display = 'block'; }
+    function hideEnglish() { document.getElementById('text-english').style.display = 'none'; }
+    function showSpanish() { document.getElementById('text-spanish').style.display = 'block'; }
+    function hideSpanish() { document.getElementById('text-spanish').style.display = 'none'; }
+</script>
+
+</body>
+</html>
