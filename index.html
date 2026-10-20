@@ -166,7 +166,7 @@
         </div>
         <div id="text-spanish" class="text-box"></div>
 
-        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.mp3)</button>
+        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.MP3)</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
@@ -330,13 +330,13 @@
         return num < 10 ? "0" + num : "" + num;
     }
 
-    // Ahora busca la frase en MP3 dentro de su carpeta correspondiente (ej: 66/66_01.mp3)
+    // Configurado estrictamente para buscar la extensión .MP3 en mayúsculas
     function playSpecificPhrase(index) {
         const fileNumber = formatIndex(index);
         crearReproductorNuevo();
         const audio = document.getElementById('audio-player');
         
-        const rutaMp3Frase = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.mp3`;
+        const rutaMp3Frase = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.MP3`;
         const info = document.getElementById('debug-info');
         info.innerText = `Reproduciendo frase: ${rutaMp3Frase}`;
         info.style.background = '#d4edda';
