@@ -117,11 +117,10 @@
         .btn-play-phrase:hover {
             background-color: #218838;
         }
-        /* Cuadro de depuración para ver qué audio suena */
         #debug-info {
-            background: #fff3cd;
-            border: 1px solid #ffeeba;
-            color: #856404;
+            background: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
             padding: 8px;
             font-size: 12px;
             margin-bottom: 10px;
@@ -135,21 +134,19 @@
 
 <div class="container">
 
-    <!-- Contenedor dinámico del reproductor -->
     <div id="audio-container"></div>
 
-    <!-- PANTALLA 1: Lista de Episodios -->
+    <!-- PANTALLA 1 -->
     <div id="screen-1" class="screen active">
         <h2>Selecciona un Episodio</h2>
         <div id="episodes-container" class="episodes-grid"></div>
     </div>
 
-    <!-- PANTALLA 2: Reproductor Episodio Completo y Textos -->
+    <!-- PANTALLA 2 -->
     <div id="screen-2" class="screen">
         <h2 id="episode-title">Episodio</h2>
 
-        <!-- Panel de control de depuración visual -->
-        <div id="debug-info">Audio actual: Ninguno</div>
+        <div id="debug-info">Cargando datos...</div>
 
         <div class="button-row">
             <button onclick="playFullEpisodeMP3()">Reproducir MP3 Completo</button>
@@ -173,7 +170,7 @@
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
-    <!-- PANTALLA 3: Estudiar Frases Individuales -->
+    <!-- PANTALLA 3 -->
     <div id="screen-3" class="screen">
         <h2>Estudiar Frases</h2>
         <div id="phrases-container" style="max-height: 350px; overflow-y: auto; text-align: left; margin-bottom: 15px;"></div>
@@ -230,7 +227,7 @@
             { en: "Oh, gotcha. What happened? Is everything okay?", es: "Ah, entiendo. ¿Qué ha pasado? ¿Está todo bien?" },
             { en: "Yeah, everything's fine, but there was a major accident on the freeway.", es: "Sí, todo bien, pero ha habido un accidente grave en la autopista." },
             { en: "Oh, I see. Traffic must be completely backed up then.", es: "Ah, ya veo. El tráfico debe estar completamente colapsado entonces." },
-            { en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutos." },
+            { en: "Exactly. The GPS says I'm stuck here for at least 45 minutes.", es: "Exacto. El GPS dice que estoy atrapado aquí durante al menos 45 minutes." },
             { en: "That's frustrating. What's your estimated time of arrival at the job site?", es: "Qué fastidio. ¿Cuál es tu hora estimada de llegada al lugar de trabajo?" },
             { en: "I should be at the warehouse by 7:35.", es: "Debería estar en el almacén a las 7:35." },
             { en: "Okay. Did you let someone on your crew know?", es: "De acuerdo. ¿Le has avisado a alguien de tu cuadrilla?" },
@@ -277,13 +274,17 @@
 
     function crearReproductorNuevo() {
         const container = document.getElementById('audio-container');
-        container.innerHTML = '<audio id="audio-player" controls style="width:100%; display:none;"></audio>';
+        container.innerHTML = '<audio id="audio-player"></audio>';
         
         const audio = document.getElementById('audio-player');
 
         audio.onerror = function() {
-            document.getElementById('debug-info').innerText = `❌ ERROR CARGANDO: ${audio.src}`;
-            document.getElementById('debug-infostyle.background'] = '#f8d7da';
+            const info = document.getElementById('debug-info');
+            if (info && audio.src) {
+                info.innerText = `❌ Error cargando audio: ${audio.src}`;
+                info.style.background = '#f8d7da';
+                info.style.color = '#721c24';
+            }
         };
     }
 
@@ -294,7 +295,10 @@
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
             document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
-            document.getElementById('debug-info').innerText = `Episodio ${ep.id} seleccionado. Listo para reproducir.`;
+            const info = document.getElementById('debug-info');
+            info.innerText = `Episodio ${ep.id} preparado.`;
+            info.style.background = '#e2e3e5';
+            info.style.color = '#383d41';
             
             let enText = "";
             let esText = "";
@@ -332,11 +336,16 @@
         const audio = document.getElementById('audio-player');
         
         const rutaM4a = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
-        document.getElementById('debug-info').innerText = `Intentando reproducir: ${rutaM4a}`;
+        const info = document.getElementById('debug-info');
+        info.innerText = `Reproduciendo: ${rutaM4a}`;
+        info.style.background = '#d4edda';
+        info.style.color = '#155724';
         
         audio.src = rutaM4a;
         audio.play().catch(e => {
-            document.getElementById('debug-info').innerText = `❌ Error de reproducción: ${e.message}`;
+            info.innerText = `❌ Error: ${e.message}`;
+            info.style.background = '#f8d7da';
+            info.style.color = '#721c24';
         });
     }
 
@@ -345,11 +354,16 @@
         const audio = document.getElementById('audio-player');
         
         const rutaMp3 = `audios/${currentEpisodeId}.mp3`;
-        document.getElementById('debug-info').innerText = `Intentando reproducir MP3: ${rutaMp3}`;
+        const info = document.getElementById('debug-info');
+        info.innerText = `Reproduciendo MP3: ${rutaMp3}`;
+        info.style.background = '#d4edda';
+        info.style.color = '#155724';
         
         audio.src = rutaMp3;
         audio.play().catch(e => {
-            document.getElementById('debug-info').innerText = `❌ Error de reproducción MP3: ${e.message}`;
+            info.innerText = `❌ Error MP3: ${e.message}`;
+            info.style.background = '#f8d7da';
+            info.style.color = '#721c24';
         });
     }
 
