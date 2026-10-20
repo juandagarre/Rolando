@@ -117,6 +117,18 @@
         .btn-play-phrase:hover {
             background-color: #218838;
         }
+        /* Cuadro de depuración para ver qué audio suena */
+        #debug-info {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            color: #856404;
+            padding: 8px;
+            font-size: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            word-break: break-all;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
@@ -136,8 +148,11 @@
     <div id="screen-2" class="screen">
         <h2 id="episode-title">Episodio</h2>
 
+        <!-- Panel de control de depuración visual -->
+        <div id="debug-info">Audio actual: Ninguno</div>
+
         <div class="button-row">
-            <button onclick="playFullEpisodeMP3()">Reproducir</button>
+            <button onclick="playFullEpisodeMP3()">Reproducir MP3 Completo</button>
             <button onclick="pauseAudio()">Parar</button>
             <button onclick="resumeAudio()">Reanudar</button>
         </div>
@@ -154,7 +169,7 @@
         </div>
         <div id="text-spanish" class="text-box"></div>
 
-        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases</button>
+        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.m4a)</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
@@ -262,14 +277,13 @@
 
     function crearReproductorNuevo() {
         const container = document.getElementById('audio-container');
-        container.innerHTML = '<audio id="audio-player"></audio>';
+        container.innerHTML = '<audio id="audio-player" controls style="width:100%; display:none;"></audio>';
         
         const audio = document.getElementById('audio-player');
 
         audio.onerror = function() {
-            if (audio.src) {
-                alert(`No se pudo cargar el audio:\n${audio.src}\n\nComprueba que el archivo existe en la carpeta correcta.`);
-            }
+            document.getElementById('debug-info').innerText = `❌ ERROR CARGANDO: ${audio.src}`;
+            document.getElementById('debug-infostyle.background'] = '#f8d7da';
         };
     }
 
@@ -280,6 +294,7 @@
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
             document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
+            document.getElementById('debug-info').innerText = `Episodio ${ep.id} seleccionado. Listo para reproducir.`;
             
             let enText = "";
             let esText = "";
@@ -313,13 +328,15 @@
 
     function playSpecificPhrase(index) {
         const fileNumber = formatIndex(index);
-        
         crearReproductorNuevo();
         const audio = document.getElementById('audio-player');
         
-        audio.src = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
+        const rutaM4a = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
+        document.getElementById('debug-info').innerText = `Intentando reproducir: ${rutaM4a}`;
+        
+        audio.src = rutaM4a;
         audio.play().catch(e => {
-            console.error("Error al reproducir frase:", e);
+            document.getElementById('debug-info').innerText = `❌ Error de reproducción: ${e.message}`;
         });
     }
 
@@ -327,9 +344,12 @@
         crearReproductorNuevo();
         const audio = document.getElementById('audio-player');
         
-        audio.src = `audios/${currentEpisodeId}.mp3`;
+        const rutaMp3 = `audios/${currentEpisodeId}.mp3`;
+        document.getElementById('debug-info').innerText = `Intentando reproducir MP3: ${rutaMp3}`;
+        
+        audio.src = rutaMp3;
         audio.play().catch(e => {
-            console.error("Error al reproducir episodio completo:", e);
+            document.getElementById('debug-info').innerText = `❌ Error de reproducción MP3: ${e.message}`;
         });
     }
 
