@@ -271,8 +271,9 @@
             }
         });
 
-        // Configurar listener para reproducir las frases en secuencia
         const audio = getAudio();
+
+        // Control para cuando termina un audio
         audio.onended = function() {
             if (isPlayingSequence) {
                 currentPhraseIndex++;
@@ -283,6 +284,11 @@
                     isPlayingSequence = false;
                 }
             }
+        };
+
+        // Manejo de errores de carga de archivo
+        audio.onerror = function() {
+            alert(`No se pudo cargar el archivo: ${audio.src}\nAsegúrate de que la carpeta "audios" contiene los archivos troceados con la extensión correcta.`);
         };
     };
 
@@ -319,13 +325,11 @@
         switchScreen('screen-2');
     }
 
-    // Auxiliar para formatear el número de archivo con 2 dígitos (ej: 1 -> "01")
     function formatIndex(index) {
         let num = index + 1;
         return num < 10 ? "0" + num : "" + num;
     }
 
-    // Reproducir una frase concreta por su índice
     function playSpecificPhrase(index) {
         isPlayingSequence = false;
         playPhraseByIndex(index);
@@ -335,12 +339,15 @@
         currentPhraseIndex = index;
         const fileNumber = formatIndex(index);
         const audio = getAudio();
-        // Carga el archivo individual desde la carpeta audios/ (ej: audios/66_01.m4a)
+        
+        // Asigna la ruta exacta del trozo individual
         audio.src = `audios/${currentEpisodeId}_${fileNumber}.m4a`;
-        audio.play();
+        audio.load();
+        audio.play().catch(e => {
+            console.error("Error al reproducir audio:", e);
+        });
     }
 
-    // Reproducir todo el episodio frase por frase en secuencia
     function playFullEpisode() {
         isPlayingSequence = true;
         playPhraseByIndex(0);
