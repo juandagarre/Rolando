@@ -123,21 +123,21 @@
 
 <div class="container">
 
-    {/* Contenedor dinámico donde inyectaremos el reproductor limpio para evitar bloqueos de caché */}
+    <!-- Contenedor dinámico del reproductor -->
     <div id="audio-container"></div>
 
-    <!-- PANTALLA 1 -->
+    <!-- PANTALLA 1: Lista de Episodios -->
     <div id="screen-1" class="screen active">
         <h2>Selecciona un Episodio</h2>
         <div id="episodes-container" class="episodes-grid"></div>
     </div>
 
-    <!-- PANTALLA 2 -->
+    <!-- PANTALLA 2: Reproductor Episodio Completo y Textos -->
     <div id="screen-2" class="screen">
         <h2 id="episode-title">Episodio</h2>
 
         <div class="button-row">
-            <button onclick="playFullEpisode()">Reproducir</button>
+            <button onclick="playFullEpisodeMP3()">Reproducir</button>
             <button onclick="pauseAudio()">Parar</button>
             <button onclick="resumeAudio()">Reanudar</button>
         </div>
@@ -158,7 +158,7 @@
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
-    <!-- PANTALLA 3 -->
+    <!-- PANTALLA 3: Estudiar Frases Individuales -->
     <div id="screen-3" class="screen">
         <h2>Estudiar Frases</h2>
         <div id="phrases-container" style="max-height: 350px; overflow-y: auto; text-align: left; margin-bottom: 15px;"></div>
@@ -233,8 +233,6 @@
 
     const availableEpisodes = [];
     let currentEpisodeId = null;
-    let currentPhraseIndex = 0;
-    let isPlayingSequence = false;
 
     for (let i = 1; i <= 75; i++) {
         let idFormatted = i < 10 ? "0" + i : "" + i;
@@ -267,20 +265,11 @@
         container.innerHTML = '<audio id="audio-player"></audio>';
         
         const audio = document.getElementById('audio-player');
-        audio.onended = function() {
-            if (isPlayingSequence) {
-                currentPhraseIndex++;
-                const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
-                if (ep && currentPhraseIndex < ep.phrases.length) {
-                    playPhraseByIndex(currentPhraseIndex);
-                } else {
-                    isPlayingSequence = false;
-                }
-            }
-        };
 
         audio.onerror = function() {
-            alert(`Aviso: El archivo de audio no se encuentra o no se puede leer.\nRuta intentada: ${audio.src}`);
+            if (audio.src) {
+                alert(`No se pudo cargar el audio:\n${audio.src}\n\nComprueba que el archivo existe en la carpeta correcta.`);
+            }
         };
     }
 
@@ -290,100 +279,4 @@
 
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
-            document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
-            
-            let enText = "";
-            let esText = "";
-            ep.phrases.forEach(p => {
-                enText += p.en + "\n";
-                esText += p.es + "\n";
-            });
-            document.getElementById('text-english').innerText = enText.trim();
-            document.getElementById('text-spanish').innerText = esText.trim();
-
-            const phrasesContainer = document.getElementById('phrases-container');
-            phrasesContainer.innerHTML = "";
-            ep.phrases.forEach((p, index) => {
-                const card = document.createElement('div');
-                card.className = 'phrase-card';
-                card.innerHTML = `
-                    <p class="phrase-en">${index + 1}. ${p.en}</p>
-                    <p class="phrase-es">${p.es}</p>
-                    <button class="btn-play-phrase" onclick="playSpecificPhrase(${index})">Escuchar frase</button>
-                `;
-                phrasesContainer.appendChild(card);
-            });
-        }
-        switchScreen('screen-2');
-    }
-
-    function formatIndex(index) {
-        let num = index + 1;
-        return num < 10 ? "0" + num : "" + num;
-    }
-
-    function playSpecificPhrase(index) {
-        isPlayingSequence = false;
-        playPhraseByIndex(index);
-    }
-
-    function playPhraseByIndex(index) {
-        currentPhraseIndex = index;
-        const fileNumber = formatIndex(index);
-        
-        crearReproductorNuevo(); // Recrea el reproductor limpio para evitar bloqueos del navegador
-        const audio = document.getElementById('audio-player');
-        
-        // Apunta estrictamente al archivo .m4a individual
-        audio.src = `audios/${currentEpisodeId}_${fileNumber}.m4a`;
-        audio.play().catch(e => {
-            console.error("Error de reproducción:", e);
-        });
-    }
-
-    function playFullEpisode() {
-        isPlayingSequence = true;
-        playPhraseByIndex(0);
-    }
-
-    function goToScreen1() {
-        pauseAudio();
-        switchScreen('screen-1');
-    }
-
-    function goToScreen2() {
-        pauseAudio();
-        switchScreen('screen-2');
-    }
-
-    function goToStudy() {
-        pauseAudio();
-        switchScreen('screen-3');
-    }
-
-    function switchScreen(screenId) {
-        document.querySelectorAll('.screen').forEach(screen => {
-            screen.classList.remove('active');
-        });
-        document.getElementById(screenId).classList.add('active');
-    }
-
-    function pauseAudio() {
-        isPlayingSequence = false;
-        const audio = document.getElementById('audio-player');
-        if (audio) audio.pause();
-    }
-
-    function resumeAudio() {
-        const audio = document.getElementById('audio-player');
-        if (audio) audio.play();
-    }
-
-    function showEnglish() { document.getElementById('text-english').style.display = 'block'; }
-    function hideEnglish() { document.getElementById('text-english').style.display = 'none'; }
-    function showSpanish() { document.getElementById('text-spanish').style.display = 'block'; }
-    function hideSpanish() { document.getElementById('text-spanish').style.display = 'none'; }
-</script>
-
-</body>
-</html>
+            document.getElementById('episode-title').innerText = `Episodio ${ep.
