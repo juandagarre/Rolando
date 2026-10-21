@@ -107,6 +107,12 @@
             color: #666;
             font-size: 14px;
         }
+        /* Estilo específico para las frases de español en la pantalla 4 */
+        .phrase-es-bold {
+            font-weight: bold;
+            color: #222;
+            font-size: 15px;
+        }
         .btn-play-phrase {
             background-color: #28a745;
             padding: 5px 10px;
@@ -167,6 +173,7 @@
         <div id="text-spanish" class="text-box"></div>
 
         <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.m4a)</button>
+        <button onclick="goToStudySpanish()" style="background-color: #17a2b8; margin-top: 6px;">Estudiar Español (Lectura/Audio)</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
@@ -177,13 +184,31 @@
         <button onclick="goToScreen2()" class="btn-secondary">Volver</button>
     </div>
 
+    <!-- PANTALLA 4: Estudiar Español -->
+    <div id="screen-4" class="screen">
+        <h2 id="episode-title-es">Estudiar Español</h2>
+
+        <button onclick="speakFullSpanishText()" style="background-color: #ffc107; color: #000; font-weight: bold;">Escuchar español</button>
+        <button onclick="stopSpeech()" class="btn-secondary">Detener Lectura</button>
+
+        <div class="button-row" style="margin-top: 15px;">
+            <button onclick="showSpanishStudyText()">Texto ES</button>
+            <button onclick="hideSpanishStudyText()" class="btn-secondary">Ocultar ES</button>
+        </div>
+        <div id="text-spanish-study" class="text-box"></div>
+
+        <div id="phrases-spanish-container" style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 15px; margin-bottom: 15px;"></div>
+        
+        <button onclick="goToScreen2()" class="btn-secondary">Volver</button>
+    </div>
+
 </div>
 
 <script>
     const misEpisodiosRellenos = {
         "64": [
             { en: "Excuse me. Quick question: what's the best way to get out of the airport?", es: "Disculpe. Una pregunta rápida: ¿cuál es la mejor manera de salir del aeropuerto?" },
-            { en: "Hi! Sure, we have two main transportation options for you.", es: "¡Hola! Claro, tenemos دو opciones principales de transporte para usted." },
+            { en: "Hi! Sure, we have two main transportation options for you.", es: "¡Hola! Claro, tenemos dos opciones principales de transporte para usted." },
             { en: "Great! What’s the first option?", es: "¡Genial! ¿Cuál es la primera opción?" },
             { en: "The first option is taking a rideshare like Uber from the airport.", es: "La primera opción es tomar un servicio de transporte compartido como Uber desde el aeropuerto." },
             { en: "Where is the pick-up area for rideshares?", es: "¿Dónde está la zona de recogida para los vehículos compartidos?" },
@@ -261,7 +286,6 @@
             { en: "Wonderful. I'm confident we can get him back on track together.", es: "Maravilloso. Confío en que juntos podamos encaminarlo de nuevo." },
             { en: "Thank you so much for your support, Mrs. Thompson. I really appreciate it.", es: "Muchas gracias por su apoyo, señora Thompson. Lo aprecio mucho." }
         ]
-
     };
 
     const availableEpisodes = [];
@@ -312,10 +336,12 @@
     function openEpisode(id) {
         currentEpisodeId = id;
         pauseAudio();
+        stopSpeech(); // Detener síntesis de voz si estuviera activa
 
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
             document.getElementById('episode-title').innerText = `Episodio ${ep.id}`;
+            document.getElementById('episode-title-es').innerText = `Estudiar Español - Episodio ${ep.id}`;
             const info = document.getElementById('debug-info');
             info.innerText = `Episodio ${ep.id} preparado.`;
             info.style.background = '#e2e3e5';
@@ -329,7 +355,9 @@
             });
             document.getElementById('text-english').innerText = enText.trim();
             document.getElementById('text-spanish').innerText = esText.trim();
+            document.getElementById('text-spanish-study').innerText = esText.trim();
 
+            // Rellenar frases de la pantalla 3 (Estudiar Frases original)
             const phrasesContainer = document.getElementById('phrases-container');
             phrasesContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -342,6 +370,19 @@
                 `;
                 phrasesContainer.appendChild(card);
             });
+
+            // Rellenar frases de la pantalla 4 (Estudiar Español)
+            const phrasesSpanishContainer = document.getElementById('phrases-spanish-container');
+            phrasesSpanishContainer.innerHTML = "";
+            ep.phrases.forEach((p, index) => {
+                const card = document.createElement('div');
+                card.className = 'phrase-card';
+                card.innerHTML = `
+                    <p class="phrase-es-bold">${index + 1}. ${p.es}</p>
+                    <button class="btn-play-phrase" onclick="speakSingleSpanishPhrase(${index})">Escuchar frase (ES)</button>
+                `;
+                phrasesSpanishContainer.appendChild(card);
+            });
         }
         switchScreen('screen-2');
     }
@@ -351,7 +392,6 @@
         return num < 10 ? "0" + num : "" + num;
     }
 
-    // Busca los archivos .m4a en su carpeta correspondiente (ej: 66/66_01.m4a)
     function playSpecificPhrase(index) {
         const fileNumber = formatIndex(index);
         crearReproductorNuevo();
@@ -389,19 +429,68 @@
         });
     }
 
+    /* Funciones de Síntesis de Voz (SpeechSynthesis) para Español */
+    function speakFullSpanishText() {
+        if (!('speechSynthesis' in window)) {
+            alert('Lo siento, tu navegador no soporta la lectura de texto por voz.');
+            return;
+        }
+        stopSpeech();
+        const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
+        if (ep) {
+            let fullText = "";
+            ep.phrases.forEach(p => {
+                fullText += p.es + " ";
+            });
+            const utterance = new SpeechSynthesisUtterance(fullText.trim());
+            utterance.lang = 'es-ES'; // Configurar idioma español
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function speakSingleSpanishPhrase(index) {
+        if (!('speechSynthesis' in window)) {
+            alert('Lo siento, tu navegador no soporta la lectura de texto por voz.');
+            return;
+        }
+        stopSpeech();
+        const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
+        if (ep && ep.phrases[index]) {
+            const textToSpeak = ep.phrases[index].es;
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
+            utterance.lang = 'es-ES';
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    function stopSpeech() {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+        }
+    }
+
     function goToScreen1() {
         pauseAudio();
+        stopSpeech();
         switchScreen('screen-1');
     }
 
     function goToScreen2() {
         pauseAudio();
+        stopSpeech();
         switchScreen('screen-2');
     }
 
     function goToStudy() {
         pauseAudio();
+        stopSpeech();
         switchScreen('screen-3');
+    }
+
+    function goToStudySpanish() {
+        pauseAudio();
+        stopSpeech();
+        switchScreen('screen-4');
     }
 
     function switchScreen(screenId) {
@@ -425,6 +514,9 @@
     function hideEnglish() { document.getElementById('text-english').style.display = 'none'; }
     function showSpanish() { document.getElementById('text-spanish').style.display = 'block'; }
     function hideSpanish() { document.getElementById('text-spanish').style.display = 'none'; }
+
+    function showSpanishStudyText() { document.getElementById('text-spanish-study').style.display = 'block'; }
+    function hideSpanishStudyText() { document.getElementById('text-spanish-study').style.display = 'none'; }
 </script>
 
 </body>
