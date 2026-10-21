@@ -107,11 +107,16 @@
             color: #666;
             font-size: 14px;
         }
-        /* Estilo específico para las frases de español en la pantalla 4 */
+        /* Estilos para la Pantalla 4 (Español destacado + Inglés secundario) */
         .phrase-es-bold {
             font-weight: bold;
             color: #222;
             font-size: 15px;
+        }
+        .phrase-en-normal {
+            color: #555;
+            font-size: 14px;
+            margin-top: 4px;
         }
         .btn-play-phrase {
             background-color: #28a745;
@@ -336,7 +341,7 @@
     function openEpisode(id) {
         currentEpisodeId = id;
         pauseAudio();
-        stopSpeech(); // Detener síntesis de voz si estuviera activa
+        stopSpeech();
 
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
@@ -371,7 +376,7 @@
                 phrasesContainer.appendChild(card);
             });
 
-            // Rellenar frases de la pantalla 4 (Estudiar Español)
+            // Rellenar frases de la pantalla 4 (Estudiar Español con ES en negrita y EN debajo)
             const phrasesSpanishContainer = document.getElementById('phrases-spanish-container');
             phrasesSpanishContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -379,6 +384,7 @@
                 card.className = 'phrase-card';
                 card.innerHTML = `
                     <p class="phrase-es-bold">${index + 1}. ${p.es}</p>
+                    <p class="phrase-en-normal">${p.en}</p>
                     <button class="btn-play-phrase" onclick="speakSingleSpanishPhrase(${index})">Escuchar frase (ES)</button>
                 `;
                 phrasesSpanishContainer.appendChild(card);
@@ -443,7 +449,7 @@
                 fullText += p.es + " ";
             });
             const utterance = new SpeechSynthesisUtterance(fullText.trim());
-            utterance.lang = 'es-ES'; // Configurar idioma español
+            utterance.lang = 'es-ES';
             window.speechSynthesis.speak(utterance);
         }
     }
