@@ -160,7 +160,7 @@
         <div id="debug-info">Cargando datos...</div>
 
         <div class="button-row">
-            <button onclick="playFullEpisodeMP3()">Reproducir MP3 Completo</button>
+            <button onclick="playFullEpisodeMP3()">Reproducir MP3 Completo (EN)</button>
             <button onclick="pauseAudio()">Parar</button>
             <button onclick="resumeAudio()">Reanudar</button>
         </div>
@@ -177,14 +177,14 @@
         </div>
         <div id="text-spanish" class="text-box"></div>
 
-        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (.m4a)</button>
-        <button onclick="goToStudySpanish()" style="background-color: #17a2b8; margin-top: 6px;">Estudiar Español (Lectura/Audio)</button>
+        <button onclick="goToStudy()" style="background-color: #28a745; margin-top: 15px;">Estudiar Frases (Inglés .m4a)</button>
+        <button onclick="goToStudySpanish()" style="background-color: #17a2b8; margin-top: 6px;">Estudiar Español (Audio y Lectura)</button>
         <button onclick="goToScreen1()" class="btn-secondary">Volver</button>
     </div>
 
     <!-- PANTALLA 3 -->
     <div id="screen-3" class="screen">
-        <h2>Estudiar Frases</h2>
+        <h2>Estudiar Frases (Inglés)</h2>
         <div id="phrases-container" style="max-height: 350px; overflow-y: auto; text-align: left; margin-bottom: 15px;"></div>
         <button onclick="goToScreen2()" class="btn-secondary">Volver</button>
     </div>
@@ -193,10 +193,13 @@
     <div id="screen-4" class="screen">
         <h2 id="episode-title-es">Estudiar Español</h2>
 
-        <button onclick="speakFullSpanishText()" style="background-color: #ffc107; color: #000; font-weight: bold;">Escuchar español</button>
-        <button onclick="stopSpeech()" class="btn-secondary">Detener Lectura</button>
+        <div class="button-row">
+            <button onclick="playFullEpisodeSpanishMP3()" style="background-color: #ffc107; color: #000; font-weight: bold;">Reproducir MP3 Completo (ES)</button>
+            <button onclick="pauseAudio()">Parar</button>
+            <button onclick="resumeAudio()">Reanudar</button>
+        </div>
 
-        <div class="button-row" style="margin-top: 15px;">
+        <div class="button-row" style="margin-top: 10px;">
             <button onclick="showSpanishStudyText()">Texto ES</button>
             <button onclick="hideSpanishStudyText()" class="btn-secondary">Ocultar ES</button>
         </div>
@@ -291,7 +294,7 @@
             { en: "Wonderful. I'm confident we can get him back on track together.", es: "Maravilloso. Confío en que juntos podamos encaminarlo de nuevo." },
             { en: "Thank you so much for your support, Mrs. Thompson. I really appreciate it.", es: "Muchas gracias por su apoyo, señora Thompson. Lo aprecio mucho." }
         ],
-     "68": [
+        "68": [
             { en: "Good morning. Feel free to look around.", es: "Buenos días. Siéntase libre de mirar alrededor." },
             { en: "Hi, you have a lot of stuff. How much is this table lamp?", es: "Hola, tienes muchas cosas. ¿Cuánto cuesta esta lámpara de mesa?" },
             { en: "That one is 10 bucks. It works perfectly.", es: "Esa cuesta 10 dólares. Funciona perfectamente." },
@@ -312,9 +315,7 @@
             { en: "Thanks. Would you throw in these five DVDs for three more bucks?", es: "Gracias. ¿Incluirías estos cinco DVD por tres dólares más?" },
             { en: "You're a tough negotiator. Sure, three bucks sounds good.", es: "Eres un negociador duro. Claro, tres dólares suena bien." }
         ],
-
-
-     "75": [
+        "75": [
             { en: "Hi. How can I help you today?", es: "Hola. ¿Cómo puedo ayudarle hoy?" },
             { en: "Hi, I'd like to return this dress and get a refund, please.", es: "Hola, me gustaría devolver este vestido y obtener un reembolso, por favor." },
             { en: "All right, let me see. Do you have your receipt?", es: "Muy bien, déjame ver. ¿Tiene su recibo?" },
@@ -335,7 +336,6 @@
             { en: "Great. I'll look around to see if I like another style.", es: "Genial. Echaré un vistazo para ver si me gusta otro estilo." },
             { en: "Perfect. I'll have your card ready at the register when you're done.", es: "Perfecto. Tendré su tarjeta lista en la caja cuando termine." }
         ]
-
     };
 
     const availableEpisodes = [];
@@ -386,7 +386,6 @@
     function openEpisode(id) {
         currentEpisodeId = id;
         pauseAudio();
-        stopSpeech();
 
         const ep = availableEpisodes.find(item => item.id === id);
         if(ep) {
@@ -407,7 +406,7 @@
             document.getElementById('text-spanish').innerText = esText.trim();
             document.getElementById('text-spanish-study').innerText = esText.trim();
 
-            // Rellenar frases de la pantalla 3 (Estudiar Frases original)
+            // Rellenar frases de la pantalla 3 (Estudiar Frases - Inglés)
             const phrasesContainer = document.getElementById('phrases-container');
             phrasesContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -421,7 +420,7 @@
                 phrasesContainer.appendChild(card);
             });
 
-            // Rellenar frases de la pantalla 4 (Estudiar Español con ES en negrita y EN debajo)
+            // Rellenar frases de la pantalla 4 (Estudiar Español con audios reales)
             const phrasesSpanishContainer = document.getElementById('phrases-spanish-container');
             phrasesSpanishContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -430,7 +429,7 @@
                 card.innerHTML = `
                     <p class="phrase-es-bold">${index + 1}. ${p.es}</p>
                     <p class="phrase-en-normal">${p.en}</p>
-                    <button class="btn-play-phrase" onclick="speakSingleSpanishPhrase(${index})">Escuchar frase (ES)</button>
+                    <button class="btn-play-phrase" onclick="playSpecificSpanishPhrase(${index})">Escuchar frase (ES)</button>
                 `;
                 phrasesSpanishContainer.appendChild(card);
             });
@@ -450,11 +449,31 @@
         
         const rutaM4a = `${currentEpisodeId}/${currentEpisodeId}_${fileNumber}.m4a`;
         const info = document.getElementById('debug-info');
-        info.innerText = `Reproduciendo frase: ${rutaM4a}`;
+        info.innerText = `Reproduciendo frase (EN): ${rutaM4a}`;
         info.style.background = '#d4edda';
         info.style.color = '#155724';
         
         audio.src = rutaM4a;
+        audio.play().catch(e => {
+            info.innerText = `❌ Error: ${e.message}`;
+            info.style.background = '#f8d7da';
+            info.style.color = '#721c24';
+        });
+    }
+
+    // Reproduce la frase individual en español desde la carpeta del episodio (ej: 68/68e_01.m4a)
+    function playSpecificSpanishPhrase(index) {
+        const fileNumber = formatIndex(index);
+        crearReproductorNuevo();
+        const audio = document.getElementById('audio-player');
+        
+        const rutaM4aES = `${currentEpisodeId}/${currentEpisodeId}e_${fileNumber}.m4a`;
+        const info = document.getElementById('debug-info');
+        info.innerText = `Reproduciendo frase (ES): ${rutaM4aES}`;
+        info.style.background = '#d4edda';
+        info.style.color = '#155724';
+        
+        audio.src = rutaM4aES;
         audio.play().catch(e => {
             info.innerText = `❌ Error: ${e.message}`;
             info.style.background = '#f8d7da';
@@ -468,7 +487,7 @@
         
         const rutaMp3 = `audios/${currentEpisodeId}.mp3`;
         const info = document.getElementById('debug-info');
-        info.innerText = `Reproduciendo MP3 completo: ${rutaMp3}`;
+        info.innerText = `Reproduciendo MP3 completo (EN): ${rutaMp3}`;
         info.style.background = '#d4edda';
         info.style.color = '#155724';
         
@@ -480,67 +499,42 @@
         });
     }
 
-    /* Funciones de Síntesis de Voz (SpeechSynthesis) para Español */
-    function speakFullSpanishText() {
-        if (!('speechSynthesis' in window)) {
-            alert('Lo siento, tu navegador no soporta la lectura de texto por voz.');
-            return;
-        }
-        stopSpeech();
-        const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
-        if (ep) {
-            let fullText = "";
-            ep.phrases.forEach(p => {
-                fullText += p.es + " ";
-            });
-            const utterance = new SpeechSynthesisUtterance(fullText.trim());
-            utterance.lang = 'es-ES';
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
-    function speakSingleSpanishPhrase(index) {
-        if (!('speechSynthesis' in window)) {
-            alert('Lo siento, tu navegador no soporta la lectura de texto por voz.');
-            return;
-        }
-        stopSpeech();
-        const ep = availableEpisodes.find(item => item.id === currentEpisodeId);
-        if (ep && ep.phrases[index]) {
-            const textToSpeak = ep.phrases[index].es;
-            const utterance = new SpeechSynthesisUtterance(textToSpeak);
-            utterance.lang = 'es-ES';
-            window.speechSynthesis.speak(utterance);
-        }
-    }
-
-    function stopSpeech() {
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-        }
+    // Reproduce el MP3 completo en español desde la carpeta audios (ej: audios/68e.mp3)
+    function playFullEpisodeSpanishMP3() {
+        crearReproductorNuevo();
+        const audio = document.getElementById('audio-player');
+        
+        const rutaMp3ES = `audios/${currentEpisodeId}e.mp3`;
+        const info = document.getElementById('debug-info');
+        info.innerText = `Reproduciendo MP3 completo (ES): ${rutaMp3ES}`;
+        info.style.background = '#d4edda';
+        info.style.color = '#155724';
+        
+        audio.src = rutaMp3ES;
+        audio.play().catch(e => {
+            info.innerText = `❌ Error MP3 ES: ${e.message}`;
+            info.style.background = '#f8d7da';
+            info.style.color = '#721c24';
+        });
     }
 
     function goToScreen1() {
         pauseAudio();
-        stopSpeech();
         switchScreen('screen-1');
     }
 
     function goToScreen2() {
         pauseAudio();
-        stopSpeech();
         switchScreen('screen-2');
     }
 
     function goToStudy() {
         pauseAudio();
-        stopSpeech();
         switchScreen('screen-3');
     }
 
     function goToStudySpanish() {
         pauseAudio();
-        stopSpeech();
         switchScreen('screen-4');
     }
 
