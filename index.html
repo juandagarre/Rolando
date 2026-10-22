@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App de Audios - Inglés</title>
+    <title>App de Audios - Rolando</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -107,7 +107,6 @@
             color: #666;
             font-size: 14px;
         }
-        /* Estilos para la Pantalla 4 (Español destacado + Inglés secundario) */
         .phrase-es-bold {
             font-weight: bold;
             color: #222;
@@ -139,7 +138,39 @@
             word-break: break-all;
             text-align: left;
         }
+
+        /* Estilos específicos para la autenticación */
+        .auth-card {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .auth-input {
+            display: block;
+            margin: 10px auto;
+            padding: 10px;
+            width: 90%;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .auth-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 90%;
+        }
+        .auth-btn:hover { background-color: #0056b3; }
+        #auth-mensaje { font-size: 14px; margin-top: 10px; }
     </style>
+
+    <!-- EmailJS SDK -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -147,10 +178,24 @@
 
     <div id="audio-container"></div>
 
+    <!-- PANTALLA 0: AUTENTICACIÓN (MAGIC LINK) -->
+    <div id="screen-0" class="screen active">
+        <h2>Identificación</h2>
+        <div class="auth-card">
+            <p style="color: #64748b; margin-top: 0;">Introduce tu correo para recibir un enlace de acceso seguro:</p>
+            <input type="email" id="auth-email" class="auth-input" placeholder="Correo electrónico">
+            <button class="auth-btn" id="btnLoginLink">Enviar enlace de acceso</button>
+            <p id="auth-mensaje"></p>
+        </div>
+    </div>
+
     <!-- PANTALLA 1 -->
-    <div id="screen-1" class="screen active">
+    <div id="screen-1" class="screen">
         <h2>Selecciona un Episodio</h2>
         <div id="episodes-container" class="episodes-grid"></div>
+        <div style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <button id="btnLogout" class="btn-secondary" style="background-color: #d9534f;">Cerrar Sesión</button>
+        </div>
     </div>
 
     <!-- PANTALLA 2 -->
@@ -331,7 +376,7 @@
             { en: "Yes, it does. This card expires in six months.", es: "Sí, la tiene. Esta tarjeta vence en seis meses." },
             { en: "Only six months? That's not a lot of time.", es: "¿Solo seis meses? Eso no es mucho tiempo." },
             { en: "Don't worry, it's plenty of time. We get new inventory every week.", es: "No se preocupe, es mucho tiempo. Recibimos mercancía nueva cada semana." },
-            { en: "Can I use it today if I find something else?", es: "¿Puedo usarlo hoy si encuentro otra cosa?" },
+            { en: "Can I use it today if I find something else?", es: "¿Puedo usarlo hoy si encuentro otra cosa?", es: "¿Puedo usarlo hoy si encuentro otra cosa?" },
             { en: "Of course. You can use it right away.", es: "Por supuesto. Puede usarlo de inmediato." },
             { en: "Great. I'll look around to see if I like another style.", es: "Genial. Echaré un vistazo para ver si me gusta otro estilo." },
             { en: "Perfect. I'll have your card ready at the register when you're done.", es: "Perfecto. Tendré su tarjeta lista en la caja cuando termine." }
@@ -406,7 +451,6 @@
             document.getElementById('text-spanish').innerText = esText.trim();
             document.getElementById('text-spanish-study').innerText = esText.trim();
 
-            // Rellenar frases de la pantalla 3 (Estudiar Frases - Inglés)
             const phrasesContainer = document.getElementById('phrases-container');
             phrasesContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -420,7 +464,6 @@
                 phrasesContainer.appendChild(card);
             });
 
-            // Rellenar frases de la pantalla 4 (Estudiar Español con audios reales)
             const phrasesSpanishContainer = document.getElementById('phrases-spanish-container');
             phrasesSpanishContainer.innerHTML = "";
             ep.phrases.forEach((p, index) => {
@@ -461,7 +504,6 @@
         });
     }
 
-    // Reproduce la frase individual en español desde la carpeta del episodio (ej: 68/68e_01.m4a)
     function playSpecificSpanishPhrase(index) {
         const fileNumber = formatIndex(index);
         crearReproductorNuevo();
@@ -499,7 +541,6 @@
         });
     }
 
-    // Reproduce el MP3 completo en español desde la carpeta audios (ej: audios/68e.mp3)
     function playFullEpisodeSpanishMP3() {
         crearReproductorNuevo();
         const audio = document.getElementById('audio-player');
@@ -562,6 +603,116 @@
 
     function showSpanishStudyText() { document.getElementById('text-spanish-study').style.display = 'block'; }
     function hideSpanishStudyText() { document.getElementById('text-spanish-study').style.display = 'none'; }
+</script>
+
+<!-- SDKs de Firebase y Control de Sesión (Magic Link) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+        getAuth, 
+        sendSignInLinkToEmail, 
+        isSignInWithEmailLink, 
+        signInWithEmailLink, 
+        onAuthStateChanged, 
+        signOut 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    // Claves del proyecto libros-a-c
+    const firebaseConfig = {
+        apiKey: "AIzaSyDcdUfnjW7L-R1Dv966msd5m8YJLZg78LY",
+        authDomain: "libros-a-c.firebaseapp.com",
+        projectId: "libros-a-c",
+        storageBucket: "libros-a-c.firebasestorage.app",
+        messagingSenderId: "1550992004",
+        appId: "1:1550992004:web:d70b312ef9bc1f740470d1",
+        measurementId: "G-GDC0HLBSJ1"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailInput = document.getElementById('auth-email');
+    const btnLoginLink = document.getElementById('btnLoginLink');
+    const authMensaje = document.getElementById('auth-mensaje');
+    const btnLogout = document.getElementById('btnLogout');
+
+    const actionCodeSettings = {
+        url: window.location.href.split('?')[0],
+        handleCodeInApp: true,
+    };
+
+    // 1. Validar si el usuario viene desde el enlace de su correo
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            email = window.prompt('Por favor, confirma tu correo electrónico para completar el acceso:');
+        }
+        signInWithEmailLink(auth, email, window.location.href)
+            .then((result) => {
+                window.localStorage.removeItem('emailForSignIn');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            })
+            .catch((error) => {
+                authMensaje.style.color = "red";
+                authMensaje.textContent = "Error al validar el enlace: " + error.message;
+            });
+    }
+
+    // 2. Enviar el enlace al correo
+    btnLoginLink.addEventListener('click', () => {
+        const email = emailInput.value;
+        if (!email) {
+            authMensaje.style.color = "red";
+            authMensaje.textContent = "Por favor, introduce un correo electrónico.";
+            return;
+        }
+
+        sendSignInLinkToEmail(auth, email, actionCodeSettings)
+            .then(() => {
+                window.localStorage.setItem('emailForSignIn', email);
+                authMensaje.style.color = "green";
+                authMensaje.textContent = "¡Correo enviado! Revisa tu bandeja de entrada y haz clic en el enlace.";
+            })
+            .catch((error) => {
+                authMensaje.style.color = "red";
+                authMensaje.textContent = "Error al enviar el correo: " + error.message;
+            });
+    });
+
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            signOut(auth);
+        });
+    }
+
+    // Inicializar EmailJS para recibir alertas de acceso
+    emailjs.init("e_JkUHvKVQ4eBKEUs");
+
+    // Observador de estado de autenticación
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            switchScreen('screen-1');
+
+            const yaNotificado = localStorage.getItem('notificado_rolando_' + user.uid);
+            if (!yaNotificado) {
+                const templateParams = {
+                    user_email: user.email,
+                    app_name: "Rolando"
+                };
+
+                emailjs.send('service_ft1wkhu', 'template_4acbswy', templateParams)
+                    .then(() => {
+                        console.log('Aviso de acceso a Rolando enviado');
+                        localStorage.setItem('notificado_rolando_' + user.uid, 'true');
+                    }, (error) => {
+                        console.error('Error enviando aviso:', error);
+                    });
+            }
+        } else {
+            pauseAudio();
+            switchScreen('screen-0');
+        }
+    });
 </script>
 
 </body>
