@@ -606,7 +606,7 @@
 </script>
 
 <!-- SDKs de Firebase y Control de Sesión (Magic Link) -->
-<script type="module">
+<!-- <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
         getAuth, 
@@ -713,7 +713,128 @@
             switchScreen('screen-0');
         }
     });
+</script>  -->
+
 </script>
+
+<!-- SDKs de Firebase y Control de Sesión (Magic Link) -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { 
+        getAuth, 
+        sendSignInLinkToEmail, 
+        isSignInWithEmailLink, 
+        signInWithEmailLink, 
+        onAuthStateChanged, 
+        signOut 
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCBHvcTekjagn5PSV_mJm2OqXk7IIb7lvU",
+        authDomain: "personajes-5663b.firebaseapp.com",
+        projectId: "personajes-5663b",
+        storageBucket: "personajes-5663b.firebasestorage.app",
+        messagingSenderId: "579683727517",
+        appId: "1:579683727517:web:af1842ca41c81af4be3c74",
+        measurementId: "G-ZYQ1B5CRVV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const emailInput = document.getElementById('auth-email');
+    const btnLoginLink = document.getElementById('btnLoginLink');
+    const authMensaje = document.getElementById('auth-mensaje');
+    const btnLogout = document.getElementById('btnLogout');
+
+    // Configuración para el enlace de correo
+    const actionCodeSettings = {
+        // URL a la que volverá el usuario al hacer clic en el correo (debe ser la misma página donde está tu app)
+        url: window.location.href.split('?')[0],
+        handleCodeInApp: true,
+    };
+
+    // 1. Si el usuario hace clic en el enlace de su correo y vuelve a la app
+    if (isSignInWithEmailLink(auth, window.location.href)) {
+        let email = window.localStorage.getItem('emailForSignIn');
+        if (!email) {
+            // Si abrió el correo en otro dispositivo, le pedimos el correo por seguridad
+            email = window.prompt('Por favor, confirma tu correo electrónico para completar el acceso:');
+        }
+        signInWithEmailLink(auth, email, window.location.href)
+            .then((result) => {
+                window.localStorage.removeItem('emailForSignIn');
+                // Limpiamos la URL para quitar los códigos de seguridad largos de Firebase
+                window.history.replaceState({}, document.title, window.location.pathname);
+            })
+            .catch((error) => {
+                authMensaje.style.color = "red";
+                authMensaje.textContent = "Error al validar el enlace: " + error.message;
+            });
+    }
+
+    // 2. Botón para enviar el enlace al correo
+    btnLoginLink.addEventListener('click', () => {
+        const email = emailInput.value;
+        if (!email) {
+            authMensaje.style.color = "red";
+            authMensaje.textContent = "Por favor, introduce un correo electrónico.";
+            return;
+        }
+
+        sendSignInLinkToEmail(auth, email, actionCodeSettings)
+            .then(() => {
+                window.localStorage.setItem('emailForSignIn', email);
+                authMensaje.style.color = "green";
+                authMensaje.textContent = "¡Correo enviado! Revisa tu bandeja de entrada y haz clic en el enlace.";
+            })
+            .catch((error) => {
+                authMensaje.style.color = "red";
+                authMensaje.textContent = "Error al enviar el correo: " + error.message;
+            });
+    });
+
+    if (btnLogout) {
+        btnLogout.addEventListener('click', () => {
+            signOut(auth);
+        });
+    }
+emailjs.init("e_JkUHvKVQ4eBKEUs");
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        document.getElementById('view-auth').classList.remove('active');
+        document.getElementById('view-selector').classList.add('active');
+        document.getElementById('app-title').innerText = "Selecciona un Personaje";
+
+        const yaNotificado = localStorage.getItem('notificado_' + user.uid);
+        if (!yaNotificado) {
+            const templateParams = {
+                user_email: user.email
+            };
+
+            emailjs.send('service_ft1wkhu', 'template_4acbswy', templateParams)
+                .then(() => {
+                    console.log('Aviso enviado');
+                    localStorage.setItem('notificado_' + user.uid, 'true');
+                }, (error) => {
+                    console.error('Error:', error);
+                });
+        }
+    } else {
+        window.speechSynthesis.cancel();
+        if (typeof detenerAudioGrabacion === 'function') detenerAudioGrabacion();
+        document.getElementById('view-selector').classList.remove('active');
+        document.getElementById('view-text').classList.remove('active');
+        document.getElementById('view-questions').classList.remove('active');
+        document.getElementById('view-auth').classList.add('active');
+        document.getElementById('app-title').innerText = "Identificación";
+    }
+});
+
+
+</script>
+    
 
 </body>
 </html>
