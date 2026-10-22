@@ -140,15 +140,39 @@
             text-align: left;
         }
     </style>
+
+     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    
 </head>
 <body>
 
 <div class="container">
 
+
+    <div id="screen-auth" class="screen active">
+    <h2>Acceso a Rolando</h2>
+    <p>Introduce tu correo electrónico para recibir el enlace de acceso.</p>
+
+    <input
+        type="email"
+        id="auth-email"
+        placeholder="Correo electrónico"
+        autocomplete="email"
+        required
+        style="width:100%;box-sizing:border-box;padding:12px;margin:10px 0;border:1px solid #ccc;border-radius:5px;font-size:16px;"
+    >
+
+    <button id="btnLoginLink" onclick="enviarEnlaceAcceso()">
+        Enviar enlace de acceso
+    </button>
+
+    <p id="auth-mensaje" role="status" aria-live="polite"></p>
+</div>
+
     <div id="audio-container"></div>
 
     <!-- PANTALLA 1 -->
-    <div id="screen-1" class="screen active">
+    <div id="screen-1" class="screen">
         <h2>Selecciona un Episodio</h2>
         <div id="episodes-container" class="episodes-grid"></div>
     </div>
@@ -564,5 +588,156 @@
     function hideSpanishStudyText() { document.getElementById('text-spanish-study').style.display = 'none'; }
 </script>
 
+<script type="module">
+import { initializeApp }
+    from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+
+import {
+    getAuth,
+    sendSignInLinkToEmail,
+    isSignInWithEmailLink,
+    signInWithEmailLink,
+    onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyCBHvcTekjagn5PSV_mJm2OqXk7IIb7lvU",
+    authDomain: "personajes-5663b.firebaseapp.com",
+    projectId: "personajes-5663b",
+    storageBucket: "personajes-5663b.firebasestorage.app",
+    messagingSenderId: "579683727517",
+    appId: "1:579683727517:web:af1842ca41c81af4be3c74",
+    measurementId: "G-ZYQ1B5CRVV"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const actionCodeSettings = {
+    url: "https://juandagarre.github.io/Rolando/",
+    handleCodeInApp: true
+};
+
+const emailStorageKey = "emailForSignInRolando";
+
+emailjs.init("e_JkUHvKVQ4eBKEUs");
+
+function mostrarPantalla(id) {
+    document.querySelectorAll(".screen").forEach(pantalla => {
+        pantalla.classList.remove("active");
+    });
+
+    document.getElementById(id).classList.add("active");
+}
+
+window.enviarEnlaceAcceso = async function () {
+    const emailInput = document.getElementById("auth-email");
+    const mensaje = document.getElementById("auth-mensaje");
+    const boton = document.getElementById("btnLoginLink");
+
+    const email = emailInput.value.trim();
+
+    if (!email || !emailInput.checkValidity()) {
+        mensaje.textContent = "Introduce un correo electrónico válido.";
+        return;
+    }
+
+    boton.disabled = true;
+    mensaje.textContent = "Enviando enlace de acceso…";
+
+    try {
+        await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+
+        localStorage.setItem(emailStorageKey, email);
+
+        mensaje.textContent =
+            "Enlace enviado. Abre tu correo y pulsa el enlace para entrar en Rolando.";
+    } catch (error) {
+        console.error("Error al enviar el enlace:", error);
+
+        mensaje.textContent =
+            "No se pudo enviar el enlace. Comprueba la configuración de Firebase e inténtalo de nuevo.";
+    } finally {
+        boton.disabled = false;
+    }
+};
+
+async function comprobarEnlaceAcceso() {
+    if (!isSignInWithEmailLink(auth, window.location.href)) {
+        return;
+    }
+
+    let email = localStorage.getItem(emailStorageKey);
+
+    if (!email) {
+        email = window.prompt(
+            "Introduce el correo electrónico al que has recibido el enlace:"
+        );
+    }
+
+    if (!email || !email.trim()) {
+        document.getElementById("auth-mensaje").textContent =
+            "Necesitas introducir el correo utilizado para solicitar el enlace.";
+        return;
+    }
+
+    try {
+        await signInWithEmailLink(
+            auth,
+            email.trim(),
+            window.location.href
+        );
+
+        localStorage.removeItem(emailStorageKey);
+
+        window.history.replaceState(
+            {},
+            document.title,
+            window.location.pathname
+        );
+    } catch (error) {
+        console.error("Error al validar el enlace:", error);
+
+        document.getElementById("auth-mensaje").textContent =
+            "No se pudo validar el enlace. Solicita uno nuevo e inténtalo otra vez.";
+    }
+}
+
+async function enviarAvisoAcceso(user) {
+    const claveAviso = "rolando_notificado_" + user.uid;
+
+    if (localStorage.getItem(claveAviso)) {
+        return;
+    }
+
+    try {
+        await emailjs.send(
+            "service_ft1wkhu",
+            "template_4acbswy",
+            {
+                user_email: user.email || ""
+            }
+        );
+
+        localStorage.setItem(claveAviso, "si");
+        console.log("Aviso de acceso enviado.");
+    } catch (error) {
+        console.error("Error al enviar el aviso por EmailJS:", error);
+    }
+}
+
+onAuthStateChanged(auth, async user => {
+    if (user) {
+        mostrarPantalla("screen-1");
+        await enviarAvisoAcceso(user);
+    } else {
+        mostrarPantalla("screen-auth");
+    }
+});
+
+comprobarEnlaceAcceso();
+</script>
+
+    
 </body>
 </html>
